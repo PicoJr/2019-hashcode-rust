@@ -6,3 +6,5 @@ edition = "2018"
 
 [dependencies]
 structopt = "0.2.10"
+fnv = "1.0.6"
+rayon = "1.0"
