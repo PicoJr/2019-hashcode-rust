@@ -53,20 +53,20 @@ mod image {
             if unique == 0 { return 0; };
             let other_unique = FnvHashSet::difference(other_tags_set, tags_set).count();
             if other_unique == 0 { return 0; };
-            return cmp::min(cmp::min(unique, other_unique), same);
+            cmp::min(cmp::min(unique, other_unique), same)
         }
 
         pub fn get_id(&self) -> usize {
             match *self {
-                Horizontal { image_id, tags: _ } => image_id,
-                Vertical { image_id, tags: _ } => image_id
+                Horizontal { image_id, .. } => image_id,
+                Vertical { image_id, .. } => image_id
             }
         }
 
         pub fn get_tags(&self) -> &Tags {
             match self {
-                Horizontal { image_id: _, tags } => tags,
-                Vertical { image_id: _, tags } => tags,
+                Horizontal { tags, .. } => tags,
+                Vertical { tags, .. } => tags,
             }
         }
     }
@@ -132,20 +132,20 @@ pub fn parse_input_file(path: std::path::PathBuf) -> Option<Vec<image::Image>> {
 pub fn dump(path: std::path::PathBuf, slides: Vec<FSlide>) {
     let file = File::create(path).expect("file could not be opened");
     let mut writer = BufWriter::new(file);
-    write!(writer, "{}\n", slides.len()).expect("io error");
+    writeln!(writer, "{}", slides.len()).expect("io error");
     for slide in slides {
         match slide {
             FSlide::H { h } => {
-                write!(writer, "{}\n", h).expect("io error");
+                writeln!(writer, "{}", h).expect("io error");
             }
             FSlide::V { v, other_v } => {
-                write!(writer, "{} {}\n", v, other_v).expect("io error");
+                writeln!(writer, "{} {}", v, other_v).expect("io error");
             }
         }
     }
 }
 
-fn get_best_horizontal(previous_tags: &Tags, horizontals: &Vec<Image>) -> (usize, Option<(Image, usize)>) {
+fn get_best_horizontal(previous_tags: &Tags, horizontals: &[Image]) -> (usize, Option<(Image, usize)>) {
     let mut best_score = 0;
     let mut best_image = Option::None;
     for (i, image) in horizontals.iter().enumerate() {
@@ -164,7 +164,7 @@ fn get_best_horizontal(previous_tags: &Tags, horizontals: &Vec<Image>) -> (usize
     }
 }
 
-fn get_best_vertical(previous_tags: &Tags, verticals: &Vec<Image>) -> (usize, Option<(Image, usize, Image, usize)>) {
+fn get_best_vertical(previous_tags: &Tags, verticals: &[Image]) -> (usize, Option<(Image, usize, Image, usize)>) {
     let mut best_score = 0;
     let mut best_image = Option::None;
     let first_v: &Image;
