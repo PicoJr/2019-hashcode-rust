@@ -10,6 +10,8 @@ disclaimer: 1st project in Rust.
 cargo run --release res/b_lovely_landscapes.txt 1000
 ```
 
+> `1000` is the chunk size, each chunk is brute-forced using greedy search.
+
 ## Scores
 
 | Problem           | Score  | time     | chunk size |
