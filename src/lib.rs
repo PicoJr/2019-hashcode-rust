@@ -106,7 +106,8 @@ mod slide {
 }
 
 
-pub fn parse_input_file(path: std::path::PathBuf) -> Option<Vec<image::Image>> {
+/// Parse problem statement file.
+pub fn parse_input_file(path: std::path::PathBuf) -> Vec<image::Image> {
     let file = File::open(path).expect("file could not be opened");
     let mut images: Vec<image::Image> = vec![];
     let reader = BufReader::new(file);
@@ -126,9 +127,10 @@ pub fn parse_input_file(path: std::path::PathBuf) -> Option<Vec<image::Image>> {
         let image = image::Image::new(image_id - 1, orientation == "H", tags_set);
         images.push(image);
     }
-    Option::Some(images)
+    images
 }
 
+/// Dump `slides` to file at `path`.
 pub fn dump(path: std::path::PathBuf, slides: Vec<FSlide>) {
     let file = File::create(path).expect("file could not be opened");
     let mut writer = BufWriter::new(file);
@@ -189,6 +191,14 @@ fn get_best_vertical(previous_tags: &Tags, verticals: &[Image]) -> (usize, Optio
     }
 }
 
+/// Greedy algorithm on a subset (slice) of images:
+/// Each slide is paired with the next _almost-best_ slide within the subset considered.
+///
+/// _almost-best_ means it uses an heuristic for vertical slides: the first vertical image
+/// considered is paired with every other remaining vertical images (`O(n)`) instead of
+/// going through all possible pairs (`O(n^2)`).
+///
+/// Overall complexity is approximately `O(n^2)` with `n` being the size of the slice considered.
 pub fn solve(images: &[Image]) -> Vec<FSlide> {
     let mut slides: Vec<FSlide> = vec![];
     let mut horizontals: Vec<Image> = vec![];
