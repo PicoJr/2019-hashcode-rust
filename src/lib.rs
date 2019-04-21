@@ -105,6 +105,24 @@ mod slide {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use std::iter::FromIterator;
+
+    use super::*;
+
+    #[test]
+    fn test_score() {
+        let tag_vec1 = vec!["fizz", "buzz"].iter().map(|x| x.to_string()).collect::<Vec<String>>();
+        ;
+        let tag_vec2 = vec!["fizz", "ferris"].iter().map(|x| x.to_string()).collect::<Vec<String>>();
+        ;
+        let tag1: Tags = FnvHashSet::from_iter(tag_vec1);
+        let tag2: Tags = FnvHashSet::from_iter(tag_vec2);
+        assert_eq!(Image::score(&tag1, &tag1), 0);
+        assert_eq!(Image::score(&tag1, &tag2), 1);
+    }
+}
 
 /// Parse problem statement file.
 pub fn parse_input_file(path: std::path::PathBuf) -> Vec<image::Image> {
