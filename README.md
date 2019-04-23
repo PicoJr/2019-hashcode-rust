@@ -24,6 +24,8 @@ cargo run --release res/b_lovely_landscapes.txt 1000
 
 total: `840583`
 
+cpu: `Intel i5 760 (4) @ 2.801GHz`
+
 ## Crates
 
 * <https://docs.rs/structopt>
