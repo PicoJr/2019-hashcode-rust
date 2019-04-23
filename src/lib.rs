@@ -171,32 +171,22 @@ fn get_best_horizontal(previous_tags: &Tags, horizontals: &[Image]) -> (usize, O
         .enumerate()
         .max_by_key(|&(_, image)| Slide::get_score_slide(previous_tags, &Slide::H { h: image })) {
         None => (0, None),
-        Some(best) => (Slide::get_score_slide(previous_tags, &Slide::H { h: best.1 }), Some((best.1.clone(), best.0))),
+        Some((best_index, best_h)) => (Slide::get_score_slide(previous_tags, &Slide::H { h: best_h }), Some((best_h.clone(), best_index))),
     }
 }
 
 fn get_best_vertical(previous_tags: &Tags, verticals: &[Image]) -> (usize, Option<(Image, usize, Image, usize)>) {
-    let mut best_score = 0;
-    let mut best_image = Option::None;
-    let first_v: &Image;
-    match verticals.first() {
-        None => { return (best_score, Option::None); }
-        Some(image) => { first_v = image }
-    }
-    for (i, image) in verticals.iter().enumerate() {
-        if i == 0 {
-            continue;
-        }
-        let slide = Slide::V { v: first_v, other_v: image };
-        let score = Slide::get_score_slide(previous_tags, &slide);
-        if score >= best_score {
-            best_score = score;
-            best_image = Option::Some((image, i));
-        }
-    }
-    match best_image {
-        None => { (best_score, Option::None) }
-        Some(best) => { (best_score, Option::Some((first_v.clone(), 0, best.0.clone(), best.1))) }
+    match verticals.split_first() {
+        None => (0, None),
+        Some((first_v, other_verticals)) => {
+            match other_verticals
+                .iter()
+                .enumerate()
+                .max_by_key(|&(_, image)| Slide::get_score_slide(previous_tags, &Slide::V { v: first_v, other_v: image })) {
+                None => (0, None),
+                Some((best_index, best_v)) => (Slide::get_score_slide(previous_tags, &Slide::V { v: first_v, other_v: best_v }), Some((first_v.clone(), 0, best_v.clone(), best_index + 1))),
+            }
+        },
     }
 }
 
