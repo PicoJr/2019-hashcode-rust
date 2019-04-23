@@ -166,21 +166,12 @@ pub fn dump(path: std::path::PathBuf, slides: Vec<FSlide>) {
 }
 
 fn get_best_horizontal(previous_tags: &Tags, horizontals: &[Image]) -> (usize, Option<(Image, usize)>) {
-    let mut best_score = 0;
-    let mut best_image = Option::None;
-    for (i, image) in horizontals.iter().enumerate() {
-        let slide = Slide::H { h: image };
-        let score = Slide::get_score_slide(previous_tags, &slide);
-        if score >= best_score {
-            best_score = score;
-            best_image = Option::Some((image, i));
-        }
-    }
-    match best_image {
-        None => { (best_score, Option::None) }
-        Some(best) => {
-            (best_score, Option::Some((best.0.clone(), best.1)))
-        }
+    match horizontals
+        .iter()
+        .enumerate()
+        .max_by_key(|&(_, image)| Slide::get_score_slide(previous_tags, &Slide::H { h: image })) {
+        None => (0, None),
+        Some(best) => (Slide::get_score_slide(previous_tags, &Slide::H { h: best.1 }), Some((best.1.clone(), best.0))),
     }
 }
 
