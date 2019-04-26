@@ -222,7 +222,6 @@ pub fn solve(images: &[Image]) -> Vec<FSlide> {
         &union
     };
     let mut previous_h: Image;
-    let mut previous_v: (Image, Image);
     loop {
         let (best_score_h, best_image_h) = get_best_horizontal(previous_tags, &horizontals);
         let (best_score_v, best_images_v) = get_best_vertical(previous_tags, &verticals);
@@ -235,20 +234,19 @@ pub fn solve(images: &[Image]) -> Vec<FSlide> {
         match use_horizontal {
             None => { break; }
             Some(true) => {
-                let h = best_image_h.expect("previous filter should prevent that");
-                previous_h = h.0;
+                let (h, ih) = best_image_h.expect("previous filter should prevent that");
+                previous_h = h;
                 previous_tags = previous_h.get_tags();
                 slides.push(FSlide::H { h: previous_h.get_id() });
-                horizontals.remove(h.1);
+                horizontals.remove(ih);
             }
             Some(false) => {
-                let v = best_images_v.expect("previous filter should prevent that");
-                previous_v = (v.0, v.2);
-                union = get_union(previous_v.0.get_tags(), previous_v.1.get_tags());
+                let (v0, iv0, v1, iv1) = best_images_v.expect("previous filter should prevent that");
+                union = get_union(v0.get_tags(), v1.get_tags());
                 previous_tags = &union;
-                slides.push(FSlide::V { v: previous_v.0.get_id(), other_v: previous_v.1.get_id() });
-                let min_id = std::cmp::min(v.1, v.3);
-                let max_id = std::cmp::max(v.1, v.3);
+                slides.push(FSlide::V { v: v0.get_id(), other_v: v1.get_id() });
+                let min_id = std::cmp::min(iv0, iv1);
+                let max_id = std::cmp::max(iv0, iv1);
                 verticals.remove(max_id);
                 verticals.remove(min_id);
             }
