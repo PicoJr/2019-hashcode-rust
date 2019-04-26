@@ -6,6 +6,7 @@ use std::io::{BufReader, BufWriter};
 use std::io::prelude::*;
 
 use fnv::FnvHashSet;
+use rayon::prelude::*;
 
 use crate::image::{Image, Tags};
 use crate::slide::{FSlide, get_union, Slide};
@@ -167,7 +168,7 @@ pub fn dump(path: std::path::PathBuf, slides: Vec<FSlide>) {
 
 fn get_best_horizontal(previous_tags: &Tags, horizontals: &[Image]) -> (usize, Option<Image>) {
     match horizontals
-        .iter()
+        .into_par_iter()
         .max_by_key(|&image| Slide::get_score_slide(previous_tags, &Slide::H { h: image })) {
         None => (0, None),
         Some(best_h) => (Slide::get_score_slide(previous_tags, &Slide::H { h: best_h }), Some(best_h.clone())),
@@ -179,7 +180,7 @@ fn get_best_vertical(previous_tags: &Tags, verticals: &[Image]) -> (usize, Optio
         None => (0, None),
         Some((first_v, other_verticals)) => {
             match other_verticals
-                .iter()
+                .into_par_iter()
                 .max_by_key(|&image| Slide::get_score_slide(previous_tags, &Slide::V { v: first_v, other_v: image })) {
                 None => (0, None),
                 Some(best_v) => (Slide::get_score_slide(previous_tags, &Slide::V { v: first_v, other_v: best_v }), Some((first_v.clone(), best_v.clone()))),
