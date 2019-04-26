@@ -165,26 +165,24 @@ pub fn dump(path: std::path::PathBuf, slides: Vec<FSlide>) {
     }
 }
 
-fn get_best_horizontal(previous_tags: &Tags, horizontals: &[Image]) -> (usize, Option<(Image, usize)>) {
+fn get_best_horizontal(previous_tags: &Tags, horizontals: &[Image]) -> (usize, Option<Image>) {
     match horizontals
         .iter()
-        .enumerate()
-        .max_by_key(|&(_, image)| Slide::get_score_slide(previous_tags, &Slide::H { h: image })) {
+        .max_by_key(|&image| Slide::get_score_slide(previous_tags, &Slide::H { h: image })) {
         None => (0, None),
-        Some((best_index, best_h)) => (Slide::get_score_slide(previous_tags, &Slide::H { h: best_h }), Some((best_h.clone(), best_index))),
+        Some(best_h) => (Slide::get_score_slide(previous_tags, &Slide::H { h: best_h }), Some(best_h.clone())),
     }
 }
 
-fn get_best_vertical(previous_tags: &Tags, verticals: &[Image]) -> (usize, Option<(Image, usize, Image, usize)>) {
+fn get_best_vertical(previous_tags: &Tags, verticals: &[Image]) -> (usize, Option<(Image, Image)>) {
     match verticals.split_first() {
         None => (0, None),
         Some((first_v, other_verticals)) => {
             match other_verticals
                 .iter()
-                .enumerate()
-                .max_by_key(|&(_, image)| Slide::get_score_slide(previous_tags, &Slide::V { v: first_v, other_v: image })) {
+                .max_by_key(|&image| Slide::get_score_slide(previous_tags, &Slide::V { v: first_v, other_v: image })) {
                 None => (0, None),
-                Some((best_index, best_v)) => (Slide::get_score_slide(previous_tags, &Slide::V { v: first_v, other_v: best_v }), Some((first_v.clone(), 0, best_v.clone(), best_index + 1))),
+                Some(best_v) => (Slide::get_score_slide(previous_tags, &Slide::V { v: first_v, other_v: best_v }), Some((first_v.clone(), best_v.clone()))),
             }
         },
     }
@@ -234,14 +232,14 @@ pub fn solve(images: &[Image]) -> Vec<FSlide> {
         match use_horizontal {
             None => { break; }
             Some(true) => {
-                let (h, ih) = best_image_h.expect("previous filter should prevent that");
+                let h = best_image_h.expect("previous filter should prevent that");
                 previous_h = h;
                 previous_tags = previous_h.get_tags();
                 slides.push(FSlide::H { h: previous_h.get_id() });
                 horizontals.retain(|img| img.get_id() != previous_h.get_id())
             }
             Some(false) => {
-                let (v0, iv0, v1, iv1) = best_images_v.expect("previous filter should prevent that");
+                let (v0, v1) = best_images_v.expect("previous filter should prevent that");
                 union = get_union(v0.get_tags(), v1.get_tags());
                 previous_tags = &union;
                 slides.push(FSlide::V { v: v0.get_id(), other_v: v1.get_id() });
