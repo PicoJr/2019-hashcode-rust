@@ -238,17 +238,14 @@ pub fn solve(images: &[Image]) -> Vec<FSlide> {
                 previous_h = h;
                 previous_tags = previous_h.get_tags();
                 slides.push(FSlide::H { h: previous_h.get_id() });
-                horizontals.remove(ih);
+                horizontals.retain(|img| img.get_id() != previous_h.get_id())
             }
             Some(false) => {
                 let (v0, iv0, v1, iv1) = best_images_v.expect("previous filter should prevent that");
                 union = get_union(v0.get_tags(), v1.get_tags());
                 previous_tags = &union;
                 slides.push(FSlide::V { v: v0.get_id(), other_v: v1.get_id() });
-                let min_id = std::cmp::min(iv0, iv1);
-                let max_id = std::cmp::max(iv0, iv1);
-                verticals.remove(max_id);
-                verticals.remove(min_id);
+                verticals.retain(|img| img.get_id() != v0.get_id() && img.get_id() != v1.get_id());
             }
         }
     }
