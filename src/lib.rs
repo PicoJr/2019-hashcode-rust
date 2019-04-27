@@ -2,14 +2,14 @@ extern crate fnv;
 extern crate rayon;
 
 use std::fs::File;
-use std::io::{BufReader, BufWriter};
 use std::io::prelude::*;
+use std::io::{BufReader, BufWriter};
 
 use fnv::FnvHashSet;
 use rayon::prelude::*;
 
 use crate::image::{Image, Tags};
-use crate::slide::{FSlide, get_union, Slide};
+use crate::slide::{get_union, FSlide, Slide};
 
 pub mod cli {
     use structopt::StructOpt;
@@ -31,11 +31,16 @@ mod image {
 
     pub type Tags = FnvHashSet<String>;
 
-    #[derive(Clone)]
-    #[derive(Debug)]
+    #[derive(Clone, Debug)]
     pub enum Image {
-        Horizontal { image_id: usize, tags: FnvHashSet<String> },
-        Vertical { image_id: usize, tags: FnvHashSet<String> },
+        Horizontal {
+            image_id: usize,
+            tags: FnvHashSet<String>,
+        },
+        Vertical {
+            image_id: usize,
+            tags: FnvHashSet<String>,
+        },
     }
 
     impl Image {
@@ -49,18 +54,24 @@ mod image {
 
         pub fn score(tags_set: &Tags, other_tags_set: &Tags) -> usize {
             let same = FnvHashSet::intersection(tags_set, other_tags_set).count();
-            if same == 0 { return 0; };
+            if same == 0 {
+                return 0;
+            };
             let unique = FnvHashSet::difference(tags_set, other_tags_set).count();
-            if unique == 0 { return 0; };
+            if unique == 0 {
+                return 0;
+            };
             let other_unique = FnvHashSet::difference(other_tags_set, tags_set).count();
-            if other_unique == 0 { return 0; };
+            if other_unique == 0 {
+                return 0;
+            };
             cmp::min(cmp::min(unique, other_unique), same)
         }
 
         pub fn get_id(&self) -> usize {
             match *self {
                 Horizontal { image_id, .. } => image_id,
-                Vertical { image_id, .. } => image_id
+                Vertical { image_id, .. } => image_id,
             }
         }
 
@@ -100,7 +111,9 @@ mod slide {
         pub fn get_score_slide(previous_tags: &Tags, s: &Slide) -> usize {
             match s {
                 Slide::H { h } => Image::score(previous_tags, &h.get_tags()),
-                Slide::V { v, other_v } => Image::score(previous_tags, &get_union(v.get_tags(), other_v.get_tags()))
+                Slide::V { v, other_v } => {
+                    Image::score(previous_tags, &get_union(v.get_tags(), other_v.get_tags()))
+                }
             }
         }
     }
@@ -114,9 +127,15 @@ mod tests {
 
     #[test]
     fn test_score() {
-        let tag_vec1 = vec!["fizz", "buzz"].iter().map(|x| x.to_string()).collect::<Vec<String>>();
+        let tag_vec1 = vec!["fizz", "buzz"]
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>();
         ;
-        let tag_vec2 = vec!["fizz", "ferris"].iter().map(|x| x.to_string()).collect::<Vec<String>>();
+        let tag_vec2 = vec!["fizz", "ferris"]
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>();
         ;
         let tag1: Tags = FnvHashSet::from_iter(tag_vec1);
         let tag2: Tags = FnvHashSet::from_iter(tag_vec2);
@@ -169,9 +188,13 @@ pub fn dump(path: std::path::PathBuf, slides: Vec<FSlide>) {
 fn get_best_horizontal(previous_tags: &Tags, horizontals: &[Image]) -> (usize, Option<Image>) {
     match horizontals
         .into_par_iter()
-        .max_by_key(|&image| Slide::get_score_slide(previous_tags, &Slide::H { h: image })) {
+        .max_by_key(|&image| Slide::get_score_slide(previous_tags, &Slide::H { h: image }))
+    {
         None => (0, None),
-        Some(best_h) => (Slide::get_score_slide(previous_tags, &Slide::H { h: best_h }), Some(best_h.clone())),
+        Some(best_h) => (
+            Slide::get_score_slide(previous_tags, &Slide::H { h: best_h }),
+            Some(best_h.clone()),
+        ),
     }
 }
 
@@ -179,13 +202,28 @@ fn get_best_vertical(previous_tags: &Tags, verticals: &[Image]) -> (usize, Optio
     match verticals.split_first() {
         None => (0, None),
         Some((first_v, other_verticals)) => {
-            match other_verticals
-                .into_par_iter()
-                .max_by_key(|&image| Slide::get_score_slide(previous_tags, &Slide::V { v: first_v, other_v: image })) {
+            match other_verticals.into_par_iter().max_by_key(|&image| {
+                Slide::get_score_slide(
+                    previous_tags,
+                    &Slide::V {
+                        v: first_v,
+                        other_v: image,
+                    },
+                )
+            }) {
                 None => (0, None),
-                Some(best_v) => (Slide::get_score_slide(previous_tags, &Slide::V { v: first_v, other_v: best_v }), Some((first_v.clone(), best_v.clone()))),
+                Some(best_v) => (
+                    Slide::get_score_slide(
+                        previous_tags,
+                        &Slide::V {
+                            v: first_v,
+                            other_v: best_v,
+                        },
+                    ),
+                    Some((first_v.clone(), best_v.clone())),
+                ),
             }
-        },
+        }
     }
 }
 
@@ -203,8 +241,8 @@ pub fn solve(images: &[Image]) -> Vec<FSlide> {
     let mut verticals: Vec<Image> = vec![];
     for image in images {
         match image {
-            Image::Horizontal { .. } => { horizontals.push(image.clone()) }
-            Image::Vertical { .. } => { verticals.push(image.clone()) }
+            Image::Horizontal { .. } => horizontals.push(image.clone()),
+            Image::Vertical { .. } => verticals.push(image.clone()),
         }
     }
     let mut first_h: Image;
@@ -225,25 +263,38 @@ pub fn solve(images: &[Image]) -> Vec<FSlide> {
         let (best_score_h, best_image_h) = get_best_horizontal(previous_tags, &horizontals);
         let (best_score_v, best_images_v) = get_best_vertical(previous_tags, &verticals);
         let use_horizontal = match (&best_image_h, &best_images_v) {
-            (None, None) => { Option::None }
+            (None, None) => Option::None,
             (Some(..), None) => Some(true),
             (None, Some(..)) => Some(false),
-            (Some(..), Some(..)) => if best_score_h >= best_score_v { Some(true) } else { Some(false) }
+            (Some(..), Some(..)) => {
+                if best_score_h >= best_score_v {
+                    Some(true)
+                } else {
+                    Some(false)
+                }
+            }
         };
         match use_horizontal {
-            None => { break; }
+            None => {
+                break;
+            }
             Some(true) => {
                 let h = best_image_h.expect("previous filter should prevent that");
                 previous_h = h;
                 previous_tags = previous_h.get_tags();
-                slides.push(FSlide::H { h: previous_h.get_id() });
+                slides.push(FSlide::H {
+                    h: previous_h.get_id(),
+                });
                 horizontals.retain(|img| img.get_id() != previous_h.get_id())
             }
             Some(false) => {
                 let (v0, v1) = best_images_v.expect("previous filter should prevent that");
                 union = get_union(v0.get_tags(), v1.get_tags());
                 previous_tags = &union;
-                slides.push(FSlide::V { v: v0.get_id(), other_v: v1.get_id() });
+                slides.push(FSlide::V {
+                    v: v0.get_id(),
+                    other_v: v1.get_id(),
+                });
                 verticals.retain(|img| img.get_id() != v0.get_id() && img.get_id() != v1.get_id());
             }
         }
