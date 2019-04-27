@@ -14,15 +14,15 @@ cargo run --release res/b_lovely_landscapes.txt 1000
 
 ## Scores
 
-| Problem           | Score  | time     | chunk size |
-|:------------------|-------:|---------:|-----------:|
-| Example           | 0      | 0        | 10         |
-| Lovely Landscapes | 106368 | 2min13   | 20000      |
-| Memorable moments | 1474   | 0.654s   | 1000       |
-| Pet pictures      | 406686 | 6min07s  | 20000      |
-| Shiny selfies     | 327529 | 13min54s | 20000      |
+| Problem           | H     | V     | Score  | time     | chunk size |
+|:------------------|:------|:------|-------:|---------:|-----------:|
+| Example           | 2     | 2     | 0      | 0        | 10         |
+| Lovely Landscapes | 80000 | 0     | 202854 | 9min17   | 80000      |
+| Memorable moments | 500   | 500   | 1474   | 0.654s   | 1000       |
+| Pet pictures      | 30000 | 60000 | 406686 | 6min07s  | 20000      |
+| Shiny selfies     | 0     | 80000 | 327529 | 13min54s | 20000      |
 
-total: `840583`
+total: `938543`
 
 cpu: `Intel i5 760 (4) @ 2.801GHz`
 
