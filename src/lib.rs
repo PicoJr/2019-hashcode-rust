@@ -2,14 +2,14 @@ extern crate fnv;
 extern crate rayon;
 
 use std::fs::File;
-use std::io::prelude::*;
 use std::io::{BufReader, BufWriter};
+use std::io::prelude::*;
 
 use fnv::FnvHashSet;
 use rayon::prelude::*;
 
 use crate::image::{Image, Tags};
-use crate::slide::{get_union, FSlide, Slide};
+use crate::slide::{FSlide, get_union, Slide};
 
 pub mod cli {
     use structopt::StructOpt;
@@ -57,14 +57,8 @@ mod image {
             if same == 0 {
                 return 0;
             };
-            let unique = FnvHashSet::difference(tags_set, other_tags_set).count();
-            if unique == 0 {
-                return 0;
-            };
-            let other_unique = FnvHashSet::difference(other_tags_set, tags_set).count();
-            if other_unique == 0 {
-                return 0;
-            };
+            let unique = tags_set.len() - same;
+            let other_unique = other_tags_set.len() - same;
             cmp::min(cmp::min(unique, other_unique), same)
         }
 
