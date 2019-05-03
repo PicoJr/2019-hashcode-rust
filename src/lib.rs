@@ -5,7 +5,7 @@ use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::io::prelude::*;
 
-use fnv::FnvHashSet;
+use fnv::{FnvHashMap, FnvHashSet};
 use rayon::prelude::*;
 
 use crate::image::{Image, Tags};
@@ -29,17 +29,17 @@ mod image {
 
     use crate::image::Image::{Horizontal, Vertical};
 
-    pub type Tags = FnvHashSet<String>;
+    pub type Tags = FnvHashSet<usize>;
 
     #[derive(Clone, Debug)]
     pub enum Image {
         Horizontal {
             image_id: usize,
-            tags: FnvHashSet<String>,
+            tags: FnvHashSet<usize>,
         },
         Vertical {
             image_id: usize,
-            tags: FnvHashSet<String>,
+            tags: FnvHashSet<usize>,
         },
     }
 
@@ -121,16 +121,8 @@ mod tests {
 
     #[test]
     fn test_score() {
-        let tag_vec1 = vec!["fizz", "buzz"]
-            .iter()
-            .map(|x| x.to_string())
-            .collect::<Vec<String>>();
-        ;
-        let tag_vec2 = vec!["fizz", "ferris"]
-            .iter()
-            .map(|x| x.to_string())
-            .collect::<Vec<String>>();
-        ;
+        let tag_vec1 = vec![1, 2];
+        let tag_vec2 = vec![1, 3];
         let tag1: Tags = FnvHashSet::from_iter(tag_vec1);
         let tag2: Tags = FnvHashSet::from_iter(tag_vec2);
         assert_eq!(Image::score(&tag1, &tag1), 0);
@@ -142,6 +134,8 @@ mod tests {
 pub fn parse_input_file(path: std::path::PathBuf) -> Vec<image::Image> {
     let file = File::open(path).expect("file could not be opened");
     let mut images: Vec<image::Image> = vec![];
+    let mut tags_id: FnvHashMap<String, usize> = FnvHashMap::default();
+    let mut tag_counter: usize = 0;
     let reader = BufReader::new(file);
     for (image_id, line) in reader.lines().enumerate() {
         if image_id == 0 {
@@ -154,7 +148,15 @@ pub fn parse_input_file(path: std::path::PathBuf) -> Vec<image::Image> {
         let _ = iter.next(); // tags nb
         let mut tags_set: Tags = FnvHashSet::default();
         for tag in iter {
-            tags_set.insert(tag.to_string());
+            let tag_id = match tags_id.get(tag) {
+                None => {
+                    tag_counter += 1;
+                    tags_id.insert(tag.to_string(), tag_counter);
+                    tag_counter
+                },
+                Some(id) => { id.clone() },
+            };
+            tags_set.insert(tag_id);
         }
         let image = image::Image::new(image_id - 1, orientation == "H", tags_set);
         images.push(image);
