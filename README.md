@@ -17,18 +17,19 @@ cargo run --release res/b_lovely_landscapes.txt 1000
 | Problem           | H     | V     | Score  | time     | chunk size |
 |:------------------|:------|:------|-------:|---------:|-----------:|
 | Example           | 2     | 2     | 1      | 0        | 10         |
-| Lovely Landscapes | 80000 | 0     | 202854 | 9min17   | 80000      |
-| Memorable moments | 500   | 500   | 1474   | 0.654s   | 1000       |
-| Pet pictures      | 30000 | 60000 | 406686 | 6min07s  | 20000      |
-| Shiny selfies     | 0     | 80000 | 327529 | 13min54s | 20000      |
+| Lovely Landscapes | 80000 | 0     | 202857 | 7min21   | 80000      |
+| Memorable moments | 500   | 500   | 1476   | 0.119s   | 1000       |
+| Pet pictures      | 30000 | 60000 | 406710 | 1min52s  | 20000      |
+| Shiny selfies     | 0     | 80000 | 327566 | 5min30s  | 20000      |
 
-total: `938543`
+total: `938610`
 
 cpu: `Intel i5 760 (4) @ 2.801GHz`
 
 ## Optimizations / Heuristics
 
 * _tags_ are re-indexed (replaced with integers) during initialization. (integers have much smaller overhead)
+  **3 times faster** with integers than strings.
 * horizontal slides are favored over vertical slides when score is the same.
 rational: verticals are more versatiles than horizontals, so they are kept for later use.
 
