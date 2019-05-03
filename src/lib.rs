@@ -247,10 +247,12 @@ pub fn solve(images: &[Image]) -> Vec<FSlide> {
     let mut union;
     let mut previous_tags = if !horizontals.is_empty() {
         first_h = horizontals.pop().expect("horizontals empty");
+        slides.push(FSlide::H { h: first_h.get_id() });
         first_h.get_tags()
     } else {
         first_v = verticals.pop().expect("verticals empty");
         first_other_v = verticals.pop().expect("verticals empty");
+        slides.push(FSlide::V { v: first_v.get_id(), other_v: first_other_v.get_id() });
         union = get_union(first_v.get_tags(), first_other_v.get_tags());
         &union
     };
